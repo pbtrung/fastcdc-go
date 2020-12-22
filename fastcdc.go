@@ -192,23 +192,30 @@ func (c *Chunker) Next() (Chunk, error) {
 
 func (c *Chunker) nextChunk(data []byte) (int, uint64) {
 	fp := uint64(0)
-	i := c.minSize
+	n  := len(data)
 
-	if len(data) <= c.minSize {
-		return len(data), fp
+	if n <= c.minSize {
+		return n, fp
 	}
 
-	n := min(len(data), c.maxSize)
+	i := c.minSize
+	m := c.normSize
+	if n > c.maxSize {
+		n = c.maxSize
+	}
+	if n < c.normSize {
+		m = n
+	}
 
-	for ; i < min(n, c.normSize); i++ {
-		fp = (fp << 1) + c.table[data[i]]
+	for ; i < m; i++ {
+		fp = (fp << 1) + table[data[i]]
 		if (fp & c.maskS) == 0 {
 			return i + 1, fp
 		}
 	}
 
 	for ; i < n; i++ {
-		fp = (fp << 1) + c.table[data[i]]
+		fp = (fp << 1) + table[data[i]]
 		if (fp & c.maskL) == 0 {
 			return i + 1, fp
 		}
@@ -240,13 +247,6 @@ func (opts Options) validate() error {
 		return errors.New("option BufSize, if specified, must be at least MaxSize")
 	}
 	return nil
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }
 
 // 256 random uint64s for the rolling hash function
