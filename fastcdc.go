@@ -208,14 +208,14 @@ func (c *Chunker) nextChunk(data []byte) (int, uint64) {
 	}
 
 	for ; i < m; i++ {
-		fp = (fp << 1) + globalTable[data[i]]
+		fp = (fp << 1) + c.table[data[i]]
 		if (fp & c.maskS) == 0 {
 			return i + 1, fp
 		}
 	}
 
 	for ; i < n; i++ {
-		fp = (fp << 1) + globalTable[data[i]]
+		fp = (fp << 1) + c.table[data[i]]
 		if (fp & c.maskL) == 0 {
 			return i + 1, fp
 		}
